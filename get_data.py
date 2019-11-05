@@ -3,6 +3,8 @@ import quandl
 
 #todo dictionary with markets as input
 
+def dict():
+    pass
 #some change ad
 
 #todo get COT and get Price for each market
