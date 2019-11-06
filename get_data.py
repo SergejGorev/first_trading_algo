@@ -150,7 +150,7 @@ def write_into_file():
     except FileExistsError:
         pass
     for dict in dict_list:
-        print('Dictionary started...', end='')
+        print('Dictionary started...', end=' ')
         sys.stdout.flush()
         for data, file in zip(get_data(dict), quandl_name_generator(dict, file=True)):
             file_path = f'{dir}{file}'
