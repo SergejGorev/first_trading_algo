@@ -54,7 +54,7 @@ quandl_cot_future_map = {
     "N6": "112741",
 }
 
-#Dictionary map with future IDs for Quandl to get COT Report
+#Generate dict value - future IDs for Quandl to get COT Report
 def quandl_cot_future():
     for future in quandl_cot_future_map.values():
         yield f'CFTC/{future}_F_L_ALL'
@@ -70,21 +70,21 @@ def df_cot_index():
         data.append(com_idx)
         yield data
 
-#Create folder if it doesn't exists and save data into files
-#If it exists check last row of each file when was the last update and load only new row(slice)
+#Generate file name
 def file_name():
     for future in quandl_cot_future_map.keys():
-        yield f'cot_{future}'
+        yield f'cot_{future}.csv'
 
+#Create folder if it doesn't exists and save data into files
 def write_into_file():
     try:
         os.makedirs(cot_dir)
     except FileExistsError:
         pass
     for data in df_cot_index():
-        data.to_csv(f'{cot_dir}\\{file_name()}', header=True)
+        data.to_csv(f'{cot_dir}\\{file_name()}')
 
-
+#If it exists check last row of each file when was the last update and load only new row(slice)
 
 #todo check the last row in files to see if the data is uptodate
 
