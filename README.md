@@ -1,5 +1,5 @@
 # First Trading Algorithm
-Trading algorithm that automatically looks for signals, generated from COT Reports, Seasonality and Price Action, and invests in different markets from the well chosen Market-Universe. Secondly, Portfolio Manager takes place and balances Positions and overall Portfolio, based on Correlation Matrix, Margin and opened Positions.
+Trading algorithm that automatically looks for signals, generated from COT Reports, Seasonality and Price Action, and invests in different markets from the well chosen Market-Universe. Secondly, Portfolio Manager takes over the helm and balances Positions and overall Portfolio, based on Correlation Matrix, Margin and opened Positions.
 
 # Object Map
 Universe(Markets that the Algorithm can choose from for analysis, we can switch for trading to Mini Futures which we will have to map manually)
