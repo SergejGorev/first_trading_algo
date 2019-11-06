@@ -101,12 +101,8 @@ quandl_ice_futures_map = {
 }
 
 dict_list = (quandl_cot_futures_map, quandl_cme_futures_map, quandl_ice_futures_map)
-#Generate dict value - future IDs for Quandl to get COT Report
-# def quandl_cot_future():
-#     for future in quandl_cot_futures_map.values():
-#         yield f'CFTC/{future}_F_L_ALL'
 
-#Request COT Data for each future and create COT Index
+#Request COT Data and Market Data for each future and create COT Index
 def get_data(dictionary):
     if dictionary is quandl_cot_futures_map:
         for future in quandl_name_generator(dictionary):
@@ -115,7 +111,9 @@ def get_data(dictionary):
             com_max = com_net.rolling(cot_period).max()
             com_min = com_net.rolling(cot_period).min()
             com_idx = 100 * (com_net - com_min) / (com_max-com_min)
-            merge = pd.merge(data, com_idx.to_frame(), left_index=True, right_index=True).dropna()
+            merge = (pd.merge(data, com_idx.to_frame(), left_index=True, right_index=True)
+                     .dropna()
+                     .rename(columns={'0':'Commercial Index'}))
             yield merge
     else:
         for future in quandl_name_generator(dictionary):
