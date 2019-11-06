@@ -14,5 +14,5 @@ Position-Manager(Strategy that involves specific position management decisions)
 
 Execution(Routing Orders, Handling Errors in execution, choosing Order Types, etc)
 
-#Notes
+# Notes
 Sentiment is one of the Signals that require a lot of time and experimental Work, so its gonna be the last thing to do here.
