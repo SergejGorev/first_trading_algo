@@ -111,9 +111,8 @@ def get_data(dictionary):
             com_max = com_net.rolling(cot_period).max()
             com_min = com_net.rolling(cot_period).min()
             com_idx = 100 * (com_net - com_min) / (com_max-com_min)
-            merge = (pd.merge(data, com_idx.to_frame(), left_index=True, right_index=True)
-                     .dropna()
-                     .rename(columns={'0':'Commercial Index'}))
+            merge = pd.merge(data, com_idx.to_frame(), left_index=True, right_index=True)
+            merge = merge.dropna().rename(columns={0:'Commercial Index'})
             yield merge
     else:
         for future in quandl_name_generator(dictionary):
