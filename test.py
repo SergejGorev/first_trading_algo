@@ -105,6 +105,7 @@ def mean_abs_pct_error(actual_values, forecast_values):
         err += np.abs(actual_values.values[i] - forecast_values.values[i]/actual_values.values[i])
     return err[0] * 100/len(forecast_values)
 
+# todo eventually change to daily data
 df = pd.read_csv('data\\ES_weekly.csv', index_col='Date', parse_dates=True)#['Settle']
 test_start_date = '2019-01-01'
 test_end_date = df[:]
@@ -126,9 +127,11 @@ agile_model = SARIMAX(endog=log_transformed_train_data,
                       seasonal_order=(1,1,2,52),
                       enforce_invertibility=False).fit()
 agile_model.summary()
-# todo figure out how to solve that shit
+# todo figure out how to match start date of the index
+#just do deactive warnings regarding PyCharm and Numpy
+# noinspection PyTypeChecker
 agile_model_pred = np.exp(agile_model.predict(start=test_start_date,
-                                              end=
+                                              end=test_end_date,
                                               dynamic=True,
                                               typ='levels'))
 print(f'MAPE{np.round(mean_abs_pct_error(log_transformed_test_data,agile_model_pred),2)}%')
