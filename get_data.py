@@ -168,6 +168,7 @@ def write_into_file():
             file_path = f'{dir}{file}'
             data.to_csv(path_or_buf=file_path)
         print('Done')
+    print('Application Finished')
 
 write_into_file()
 
