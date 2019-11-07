@@ -32,14 +32,6 @@ def cot_signal():
             i+=1
     return df_cot_signal
 
-# print(cot_signal())
-
-def seasonality_signal():
-    pass
-
-def weekly_price_tendency():
-    pass
-
 def daily_price_trigger():
     columns = ['Market', 'Price Trigger']
     df_price_trigger = pd.DataFrame(columns=columns)
@@ -62,4 +54,9 @@ def daily_price_trigger():
             i+=1
     return df_price_trigger
 
-print(daily_price_trigger())
+def seasonality_signal():
+    pass
+
+def weekly_price_tendency():
+    pass
+

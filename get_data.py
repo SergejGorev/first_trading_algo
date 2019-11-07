@@ -103,7 +103,7 @@ quandl_ice_futures_map = {
 dict_list = (quandl_cot_futures_map, quandl_cme_futures_map, quandl_ice_futures_map)
 
 #Request COT Data and Market Data for each future and create COT Index
-def get_data(dictionary):
+def get_data(dictionary, weekly=None):
     if dictionary is quandl_cot_futures_map:
         for future in quandl_name_generator(dictionary):
             data = quandl.get(future)[['Commercial Long', 'Commercial Short']]
@@ -114,17 +114,24 @@ def get_data(dictionary):
             merge = pd.merge(data, com_idx.to_frame(), left_index=True, right_index=True)
             merge = merge.dropna().rename(columns={0:'Commercial Index'})
             yield merge
+    elif weekly is True:
+        for future in quandl_name_generator(dictionary):
+            data = quandl.get(future, collapse='weekly')
+            yield data
     else:
         for future in quandl_name_generator(dictionary):
             data = quandl.get(future)#[['Open', 'High', 'Low', 'Settle', 'Volume']]
             yield data
 
 #Generator for creating ticker names and file names
-def quandl_name_generator(dictionary, file = None):
+def quandl_name_generator(dictionary, file = None, weekly=None):
     if file is True:
         if dictionary is quandl_cot_futures_map:
             for future in dictionary.keys():
                 yield f'{future}_cot.csv'
+        elif weekly is True:
+            for future in dictionary.keys():
+                yield f'{future}_weekly.csv'
         else:
             for future in dictionary.keys():
                 yield f'{future}.csv'
@@ -147,9 +154,17 @@ def write_into_file():
     except FileExistsError:
         pass
     for dict in dict_list:
-        print('Dictionary started...', end=' ')
+        print('Daily. Dictionary started...', end=' ')
         sys.stdout.flush()
         for data, file in zip(get_data(dict), quandl_name_generator(dict, file=True)):
+            file_path = f'{dir}{file}'
+            data.to_csv(path_or_buf=file_path)
+        print('Done')
+
+    for dict in dict_list[1:]:
+        print('Weekly. Dictionary started...', end=' ')
+        sys.stdout.flush()
+        for data, file in zip(get_data(dict, weekly=True), quandl_name_generator(dict, file=True, weekly=True)):
             file_path = f'{dir}{file}'
             data.to_csv(path_or_buf=file_path)
         print('Done')
