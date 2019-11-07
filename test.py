@@ -137,6 +137,7 @@ agile_model_pred = np.exp(agile_model.predict(start=test_start_date,
 print(f'MAPE{np.round(mean_abs_pct_error(log_transformed_test_data,agile_model_pred),2)}%')
 print(f'MAE:{np.round(mean_absolute_error(log_transformed_test_data,agile_model_pred),2)}')
 
+# todo made mistake in train_data. It is just splited original data
 def plot_prediciton(training_data,agile_model,agile_model_pred, original_data):
     model_data = training_data.values[1:].reshape(-1) - agile_model.resid[1:]
     model_data = pd.concat((model_data,agile_model_pred))
