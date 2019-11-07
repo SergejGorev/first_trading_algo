@@ -99,14 +99,48 @@ def best_sarima_model(train_data,p,q,P,Q,d=1,D=1,s=52):
     print(current_best_model.summary())
     return current_best_model, models
 
-
+def mean_abs_pct_error(actual_values, forecast_values):
+    err=0
+    for i in range(len(forecast_values)):
+        err += np.abs(actual_values.values[i] - forecast_values.values[i]/actual_values.values[i])
+    return err[0] * 100/len(forecast_values)
 
 df = pd.read_csv('data\\ES_weekly.csv', index_col='Date', parse_dates=True)#['Settle']
-log_transformed_data = np.log(df['Last'])
-seasonally_diffed_data = log_transformed_data.diff()[10:]
+test_start_date = '2019-01-01'
+test_end_date = df[:]
+# todo figure out how to get index of last entry
+log_transformed_train_data = np.log(df['Last'].loc[:test_start_date])
+log_transformed_test_data = np.log(df['Last'].loc[test_start_date:])
+# seasonally_diffed_data = log_transformed_train_data.diff()[10:]
 # test_stationarity(seasonally_diffed_data)
 # shapiro_normaly_test(seasonally_diffed_data)
 # plot_data_properties(seasonally_diffed_data, 'Log transformed, diff=52 and seasonally differenced data')
 # decomposition = plot_seasonal_decompose(df['Last'], 'multiplicative')
 
-best_model, models = best_sarima_model(train_data=log_transformed_data,p=range(3),q=range(3),P=range(3),Q=range(3))
+# best_model, models = best_sarima_model(train_data=log_transformed_train_data,p=range(3),q=range(3),P=range(3),Q=range(3))
+# preds_best = np.exp(best_model.predict(start='2019-01-01', dynamic=True, typ='levels'))
+# print(f'MAPE{np.round(mean_abs_pct_error(log_transformed_test_data,preds_best),2)}')
+
+agile_model = SARIMAX(endog=log_transformed_train_data,
+                      order=(1,1,2),
+                      seasonal_order=(1,1,2,52),
+                      enforce_invertibility=False).fit()
+agile_model.summary()
+# todo figure out how to solve that shit
+agile_model_pred = np.exp(agile_model.predict(start=test_start_date,
+                                              end=
+                                              dynamic=True,
+                                              typ='levels'))
+print(f'MAPE{np.round(mean_abs_pct_error(log_transformed_test_data,agile_model_pred),2)}%')
+print(f'MAE:{np.round(mean_absolute_error(log_transformed_test_data,agile_model_pred),2)}')
+
+def plot_prediciton(training_data,agile_model,agile_model_pred, original_data):
+    model_data = training_data.values[1:].reshape(-1) - agile_model.resid[1:]
+    model_data = pd.concat((model_data,agile_model_pred))
+    plt.figure(figsize=(16,6))
+    plt.plot(model_data)
+    plt.plot(original_data[1:])
+    plt.legend('Model Forecast', 'Original Data')
+    plt.show()
+
+plot_prediciton(log_transformed_train_data,agile_model,agile_model_pred, df['Last'].loc[:"2019-01-01"])
