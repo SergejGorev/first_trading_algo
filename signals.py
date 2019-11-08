@@ -8,15 +8,21 @@ import sys
 data_dir = 'data\\'
 sma_period = 18
 
-def path_generator(cot=None, market=None):
+def path_generator(cot=None, market=None, weekly=None, daily=None):
     if cot is True:
         for file in os.scandir(data_dir):
             if file.name.endswith('cot.csv'):
                 yield file.path, file.name
     if market is True:
-        for file in os.scandir(data_dir):
-            if not file.name.endswith('cot.csv'):
-                yield file.path, file.name
+        if daily is True:
+            for file in os.scandir(data_dir):
+                if not file.name.endswith('cot.csv') and \
+                        not file.name.endswith('weekly.csv'):
+                    yield file.path, file.name
+        if weekly is True:
+                for file in os.scandir(data_dir):
+                    if file.name.endswith('weekly.csv'):
+                        yield file.path, file.name
 
 def cot_signal():
     columns = ['Market', 'COT Signal']
@@ -36,7 +42,7 @@ def daily_price_trigger():
     columns = ['Market', 'Price Trigger']
     df_price_trigger = pd.DataFrame(columns=columns)
     i = 0
-    for path, name in path_generator(market=True):
+    for path, name in path_generator(market=True, daily=True):
         df = pd.read_csv(path, index_col='Date', parse_dates=True)
         df['SMA18'] = df['Settle'].rolling(sma_period).mean()
         df = df[df['SMA18'].notnull()]
