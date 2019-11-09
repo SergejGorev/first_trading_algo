@@ -3,8 +3,6 @@
 from __future__ import print_function
 
 from abc import ABCMeta, abstractmethod
-import datetime
-import os, os.path
 
 import numpy as np
 import pandas as pd
@@ -137,6 +135,117 @@ class HistoricCSVDataHandler(DataHandler):
                 reindex(index=comb_idex, method='pad').iterrows()
 
 
+    def _get_new_bar(self, symbol):
+        '''
+        Creates a generator to provide a new bar until the end of the symbol data is reached.
+        :param symbol: takes Symbol as String.
+        :return: The latest bar from the data feed.
+        '''
+
+        for b in self.symbol_data[symbol]:
+            yield b
+
+
+    def get_latest_bar(self, symbol):
+        '''
+        :param symbol: takes symbol as string.
+        :return: The last bar from the latest_symbol list.
+        '''
+
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print('That symbol is not available in the historical data set.')
+            raise
+        else:
+            return bars_list[-1]
+
+    def get_latest_bars(self, symbol, N=1):
+        '''
+        :param symbol: takes symbol as string.
+        :param N: takes N latest bars.
+        :return: The last N bars form the latest_symbol list, or N-k if less available.
+        '''
+
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print('That symbol is not available in the historical data set.')
+            raise
+        else:
+            return bars_list[-N:]
+
+    def get_latest_bar_datetime(self, symbol):
+        '''
+        Queries the latest bar for a datetime object representing the "latest market price".
+        :param symbol: takes symbol as string.
+        :return: A Python datetime object for the last bar.
+        '''
+
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print('That symbol is not available in the historical data set.')
+            raise
+        else:
+            return bars_list[-1][0]
+
+    def get_latest_bar_value(self, symbol, val_type):
+        '''
+        Makes use of Python getattr function, which queries an object to see if a particular attribute
+        exist on an object. Thus we can pass a string such as 'Open' or 'Close' to getattr to obtain
+        the value direct from the bar.
+        :param symbol: Takes symbol as string.
+        :param val_type: Takes arguments regarding a bar i.e. 'High', 'Low' etc.
+        :return: One of the Open, High, Low, Close, Volume or OI values from the pandas Bar series object.
+        '''
+
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print('That symbol is not available in the historical data set.')
+            raise
+        else:
+            return getattr(bars_list[-1][1], val_type)
+
+    def get_latest_bar_values(self, symbol, val_type, N=1):
+        '''
+        Makes use of Python getattr function, which queries an object to see if a particular attribute
+        exist on an object. Thus we can pass a string such as 'Open' or 'Close' to getattr to obtain
+        the value direct from N bars.
+        :param symbol: Takes symbol as string.
+        :param val_type: Takes arguments regarding a bar i.e. 'High', 'Low' etc.
+        :param N: takes N latest bars.
+        :return: The last N bar values from the latest_symbol list, or N-k if less available.
+        '''
+
+        try:
+            bars_list = self.latest_symbol_data[symbol, N]
+        except KeyError:
+            print('That symbol is not available in the historical data set.')
+            raise
+        else:
+            return np.array([getattr(b[1], val_type) for b in bars_list])
+
+    def update_bars(self):
+        '''
+        Generates a MarketEvent that gets added to the queue as it appends the latest bars to
+        the latest_symbol_data dictionary.
+
+        Pushes the latest bar to the latest_symbol_data structure for all symbols in the symbol list.
+        '''
+        for s in self.symbol_dict.key():
+            try:
+                bar = next(self._get_new_bar(s))
+            except StopIteration:
+                self.continue_backtest = False
+            else:
+                if bar is not None:
+                    self.latest_symbol_data[s].append(bar)
+        self.events.put(MarketEvent())
+
+
+    #todo this i will use as we begin to run this hole thing
 # Import and merge dictionaries from get_data.py
 import get_data as gd
 symbol_dict = {**gd.quandl_cme_futures_map, **gd.quandl_ice_futures_map}
