@@ -26,7 +26,7 @@ class Portfolio(object):
     time-index as well as the percentage change in portfolio total across bars.
     '''
 
-    def __int__(self, bars, events, start_date, initial_capital=100000.0):
+    def __init__(self, bars, events, start_date, initial_capital=100000.0):
         '''
         Initialises the portfolio with bars and an event queue. Also includes a starting datetime index
         and initial capital (USD unless otherwise started)
@@ -42,7 +42,7 @@ class Portfolio(object):
         self.initial_capital = initial_capital
 
         self.all_positions = self.construct_all_positions()
-        self.current_positions = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.key()] )
+        self.current_positions = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.keys()] )
 
         self.all_holdings = self.construct_all_holdings()
         self.current_holdings = self.construct_current_holdings()
@@ -53,7 +53,7 @@ class Portfolio(object):
         Construct the positions list using the start_date to determine when the time index will begin.
         :return: Dictionary
         '''
-        d = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.key()] )
+        d = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.keys()] )
         d['datetime'] = self.start_date
         return [d]
 
@@ -62,7 +62,7 @@ class Portfolio(object):
         Construct the holdings list using the start_date to determine when the time index will begin.
         :return: Dictionary
         '''
-        d = dict((k, v) for k, v in [(s, 0) for s in self.symbol_dict.key()])
+        d = dict((k, v) for k, v in [(s, 0) for s in self.symbol_dict.keys()])
         d['datetime'] = self.start_date
         d['cash'] = self.initial_capital
         d['commission'] = 0.0
@@ -74,7 +74,7 @@ class Portfolio(object):
         This constructs the dictionary which will hold the instantaneous value of the portfolio across all symbol
         :return: Dictionary
         '''
-        d = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.key()] )
+        d = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.keys()] )
         d['cash'] = self.initial_capital
         d['commission'] = 0.0
         d['total'] = self.initial_capital
@@ -87,15 +87,15 @@ class Portfolio(object):
         :param event: Makes use of a MarketEvent from the events queue.
         '''
         latest_datetime = self.bars.get_latest_bar_datetime(
-            self.symbol_dict.key()[0]
+            list(self.symbol_dict.keys())[0]
         )
 
         # Update positions
         # ================
-        dp = dict((k, v) for k, v in [(s, 0) for s in self.symbol_dict.key()] )
+        dp = dict((k, v) for k, v in [(s, 0) for s in self.symbol_dict.keys()] )
         dp['datetime'] = latest_datetime
 
-        for s in self.symbol_dict.key():
+        for s in self.symbol_dict.keys():
             dp[s] = self.current_positions[s]
 
         #Append the current positions
@@ -103,13 +103,13 @@ class Portfolio(object):
 
         # Update holdings
         # ===============
-        dh = dict((k, v) for k, v in [(s, 0) for s in self.symbol_dict.key()])
+        dh = dict((k, v) for k, v in [(s, 0) for s in self.symbol_dict.keys()])
         dh['datetime'] = latest_datetime
         dh['cash'] = self.current_holdings['cash']
         dh['commission'] = self.current_holdings['commission']
         dh['total'] = self.current_holdings['cash']
 
-        for s in self.symbol_dict.key():
+        for s in self.symbol_dict.keys():
             # Approximation to the real value
             market_value = self.current_positions[s] * \
                 self.bars.get_latest_bar_value(s, 'Settle')
@@ -133,7 +133,7 @@ class Portfolio(object):
             fill_dir = -1
 
         # Update positions list with new quantities
-        self.current_positions[fill.symbol] += fill_dir*fill.quantitiy
+        self.current_positions[fill.symbol] += fill_dir*fill.quantity
 
     def update_holdings_from_fill(self, fill):
         '''
@@ -150,7 +150,7 @@ class Portfolio(object):
 
         # Update holdings list with new quantities
         fill_cost = self.bars.get_latest_bar_value(fill.symbol, 'Settle')
-        cost = fill_dir * fill_cost * fill.quantitiy
+        cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
         self.current_holdings['cash'] -= (cost + fill.commission)

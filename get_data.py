@@ -170,6 +170,6 @@ def write_into_file():
         print('Done')
     print('Application Finished')
 
-write_into_file()
+# write_into_file()
 
 #todo check when Quandl updates the data, in order to hard code when to update

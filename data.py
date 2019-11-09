@@ -114,11 +114,12 @@ class HistoricCSVDataHandler(DataHandler):
         
         comb_idex = None
         #todo integrate a generator to generate paths
-        for s in self.symbol_dict.key():
+        for s in self.symbol_dict.keys():
             path = f'{self.csv_dir}{s}.csv'
-            self.symbol_data[s] = pd.read_csv(path, index_col='Date', parse_dates=True, usecols=[
-                'Open', 'High', 'Low', 'Settle', 'Volume'
-            ]).sort()
+            self.symbol_data[s] = pd.read_csv(path,
+                                              usecols=['Date', 'Open', 'High', 'Low', 'Settle', 'Volume'],
+                                              index_col='Date',
+                                              parse_dates=True).sort_index()
 
             # Combine the index to pad forward values
             if comb_idex is None:
@@ -208,7 +209,7 @@ class HistoricCSVDataHandler(DataHandler):
         else:
             return getattr(bars_list[-1][1], val_type)
 
-    def get_latest_bar_values(self, symbol, val_type, N=1):
+    def get_latest_bars_values(self, symbol, val_type, N=1):
         '''
         Makes use of Python getattr function, which queries an object to see if a particular attribute
         exist on an object. Thus we can pass a string such as 'Open' or 'Close' to getattr to obtain
@@ -220,7 +221,7 @@ class HistoricCSVDataHandler(DataHandler):
         '''
 
         try:
-            bars_list = self.latest_symbol_data[symbol, N]
+            bars_list = self.get_latest_bars(symbol, N)
         except KeyError:
             print('That symbol is not available in the historical data set.')
             raise
@@ -234,7 +235,7 @@ class HistoricCSVDataHandler(DataHandler):
 
         Pushes the latest bar to the latest_symbol_data structure for all symbols in the symbol list.
         '''
-        for s in self.symbol_dict.key():
+        for s in self.symbol_dict.keys():
             try:
                 bar = next(self._get_new_bar(s))
             except StopIteration:
@@ -245,7 +246,3 @@ class HistoricCSVDataHandler(DataHandler):
         self.events.put(MarketEvent())
 
 
-    #todo this i will use as we begin to run this hole thing
-# Import and merge dictionaries from get_data.py
-import get_data as gd
-symbol_dict = {**gd.quandl_cme_futures_map, **gd.quandl_ice_futures_map}
