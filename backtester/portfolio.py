@@ -2,18 +2,15 @@
 
 from __future__ import print_function
 
-import datetime
-from math import floor
 try:
     import Queue as queue
 except ImportError:
     import queue
 
-import numpy as np
 import pandas as pd
 
-from event import FillEvent, OrderEvent
-from performance import create_sharpe_ratio, create_drawdowns
+from backtester.event import OrderEvent
+from backtester.performance import create_sharpe_ratio, create_drawdowns
 
 class Portfolio(object):
     '''
@@ -112,7 +109,7 @@ class Portfolio(object):
         for s in self.symbol_dict.keys():
             # Approximation to the real value
             market_value = self.current_positions[s] * \
-                self.bars.get_latest_bar_value(s, 'Settle')
+                self.bars.get_latest_bar_value(s, 'Adj Close')
             dh[s] = market_value
             dh['total'] += market_value
 
@@ -149,7 +146,7 @@ class Portfolio(object):
             fill_dir = -1
 
         # Update holdings list with new quantities
-        fill_cost = self.bars.get_latest_bar_value(fill.symbol, 'Settle')
+        fill_cost = self.bars.get_latest_bar_value(fill.symbol, 'Adj Close')
         cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
@@ -231,5 +228,5 @@ class Portfolio(object):
             ('Max Drawdown', f'{round(max_dd * 100.0,2)}%'),
             ('Drawdown', f'{dd_duration}')
         ]
-        self.equity_curve.to_csv('equity.csv')
+        self.equity_curve.to_csv('backtester\\equity.csv')
         return stats

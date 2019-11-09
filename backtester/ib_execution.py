@@ -11,10 +11,10 @@ except ImportError:
 
 from ib.ext.Contract import Contract
 from ib.ext.Order import Order
-from ib.opt import ibConnection, message
+from ib.opt import ibConnection
 
-from event import FillEvent, OrderEvent
-from execution import ExecutionHandler
+from backtester.event import FillEvent
+from backtester.execution import ExecutionHandler
 
 
 class IBExecutionHandler(ExecutionHandler):

@@ -5,15 +5,13 @@ from __future__ import print_function
 import datetime
 
 import numpy as np
-import pandas as pd
-import statsmodels.api as sm
 
-from strategy import Strategy
-from event import SignalEvent
-from backtest import Backtest
-from data import HistoricCSVDataHandler
-from execution import SimulatedExecutionHandler
-from portfolio import Portfolio
+from backtester.strategy import Strategy
+from backtester.event import SignalEvent
+from backtester.backtest import Backtest
+from backtester.data import HistoricCSVDataHandler
+from backtester.execution import SimulatedExecutionHandler
+from backtester.portfolio import Portfolio
 
 class MovingAvarageCrossStrategy(Strategy):
     '''
@@ -58,7 +56,7 @@ class MovingAvarageCrossStrategy(Strategy):
         if event.type == 'MARKET':
             for s in self.symbol_dict.keys():
                 bars = self.bars.get_latest_bars_values(
-                    s, 'Settle', N=self.long_window
+                    s, 'Adj Close', N=self.long_window
                 )
                 bar_date = self.bars.get_latest_bar_datetime(s)
                 if bars is not None and bars != []:
@@ -84,10 +82,9 @@ class MovingAvarageCrossStrategy(Strategy):
 
 if __name__ == "__main__":
     csv_dir = 'data\\'
-    # Import and merge dictionaries from get_data.py
-    import get_data as gd
+    # Import and merge dictionaries from TICKER-SYMBOLS.py
     # symbol_dict = {**gd.quandl_cme_futures_map, **gd.quandl_ice_futures_map}
-    symbol_dict = {'CT':'ES'}
+    symbol_dict = {'SPY':'ES'}
     initial_capital = 100000.0
     heartbeat = 0.0
     start_date = datetime.datetime(1990,1,1,0,0,0)

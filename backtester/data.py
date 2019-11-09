@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import pandas as pd
 
-from event import MarketEvent
+from backtester.event import MarketEvent
 
 class DataHandler(object):
     '''
@@ -117,7 +117,7 @@ class HistoricCSVDataHandler(DataHandler):
         for s in self.symbol_dict.keys():
             path = f'{self.csv_dir}{s}.csv'
             self.symbol_data[s] = pd.read_csv(path,
-                                              usecols=['Date', 'Open', 'High', 'Low', 'Settle', 'Volume'],
+                                              usecols=['Date', 'Open', 'High', 'Low', 'Adj Close', 'Volume'],
                                               index_col='Date',
                                               parse_dates=True).sort_index()
 

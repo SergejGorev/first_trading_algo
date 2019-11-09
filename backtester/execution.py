@@ -9,7 +9,8 @@ try:
 except ImportError:
     import queue
 
-from event import FillEvent, OrderEvent
+from backtester.event import FillEvent
+
 
 class ExecutionHandler(object):
     '''
