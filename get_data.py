@@ -170,7 +170,7 @@ def write_into_file():
             file_path = f'{dir}{file}'
             data.to_csv(path_or_buf=file_path)
         print('Done')
-    print('Application Finished')
+
 
 
 def append_cot_to_market_file():
@@ -180,7 +180,7 @@ def append_cot_to_market_file():
     Calculation week is Tuesday BUT the Release is on Friday. To avoid look ahead bias, need to shift it up.
     :return: cleaned and merged symbol.csv file. Essentially overwrites the existing file.
     '''
-    print('Start cleaning files... ', end=' ')
+    print('Start removing look ahead bias in COT... ', end=' ')
     sys.stdout.flush()
     symbol_dict = {**quandl_cme_futures_map, **quandl_ice_futures_map}
     for s in symbol_dict.keys():
@@ -232,3 +232,4 @@ def append_cot_to_market_file():
 if __name__ == "__main__":
     write_into_file()
     append_cot_to_market_file()
+    print('Application Finished')
