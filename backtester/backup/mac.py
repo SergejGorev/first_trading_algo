@@ -56,7 +56,7 @@ class MovingAvarageCrossStrategy(Strategy):
         if event.type == 'MARKET':
             for s in self.symbol_dict.keys():
                 bars = self.bars.get_latest_bars_values(
-                    s, 'Settle', N=self.long_window
+                    s, 'Adj Close', N=self.long_window
                 )
                 bar_date = self.bars.get_latest_bar_datetime(s)
                 if bars is not None and bars is not []:
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     csv_dir = 'data\\'
     # Import and merge dictionaries from TICKER-SYMBOLS.py
     # symbol_dict = {**gd.quandl_cme_futures_map, **gd.quandl_ice_futures_map}
-    symbol_dict = {'ES':'ES'}
+    symbol_dict = {'SPY':'ES'}
     initial_capital = 100000.0
     heartbeat = 0.0
     start_date = datetime.datetime(1990,1,1,0,0,0)

@@ -76,7 +76,7 @@ class SPYDailyForecastStrategy():
             self.bar_index += 1
             if self.bar_index > 5:
                 lags = self.bars.get_latest_bars_values(
-                    list(self.symbol_dict.keys())[0], 'Settle', N=3
+                    list(self.symbol_dict.keys())[0], 'Adj Close', N=3
                 )
                 pred_series = pd.Series(
                     {

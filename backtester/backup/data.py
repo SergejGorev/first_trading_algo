@@ -48,14 +48,7 @@ class DataHandler(object):
         :return: Returns a Python datetime object for the last bar.
         '''
         raise NotImplementedError('Should implement get_latest_bar_datetime()')
-
-    @abstractmethod
-    def get_latest_bars_datetime(self, symbol, N=1):
-        '''
-        :return: Returns a Python datetime object for the last bar.
-        '''
-        raise NotImplementedError('Should implement get_latest_bars_datetimes()')
-
+    
     @abstractmethod
     def get_latest_bar_value(self, symbol, val_type):
         '''
@@ -119,22 +112,20 @@ class HistoricCSVDataHandler(DataHandler):
         format will be respected.
         '''
         
-        comb_index = None
+        comb_idex = None
         #todo integrate a generator to generate paths
         for s in self.symbol_dict.keys():
             path = f'{self.csv_dir}{s}.csv'
-            self.symbol_data[s] = (pd.read_csv(path,
-                                              usecols=['Date', 'Open', 'High', 'Low', 'Settle',
-                                                       'Volume', 'Commercial Index'],
+            self.symbol_data[s] = pd.read_csv(path,
+                                              usecols=['Date', 'Open', 'High', 'Low', 'Adj Close', 'Volume'],
                                               index_col='Date',
-                                              parse_dates=True)
-                                   .sort_index()
-                                   .ffill())
+                                              parse_dates=True).sort_index()
+
             # Combine the index to pad forward values
-            if comb_index is None:
-                comb_index = self.symbol_data[s].index
+            if comb_idex is None:
+                comb_idex = self.symbol_data[s].index
             else:
-                comb_index.union(self.symbol_data[s].index)
+                comb_idex.union(self.symbol_data[s].index)
 
             # Set the latest symbol_data to None
             self.latest_symbol_data[s] = []
@@ -142,7 +133,7 @@ class HistoricCSVDataHandler(DataHandler):
         # Reindex the DataFrames
         for s in self.symbol_dict:
             self.symbol_data[s] = self.symbol_data[s].\
-                reindex(index=comb_index, method='pad').iterrows()
+                reindex(index=comb_idex, method='pad').iterrows()
 
 
     def _get_new_bar(self, symbol):
@@ -199,21 +190,6 @@ class HistoricCSVDataHandler(DataHandler):
             raise
         else:
             return bars_list[-1][0]
-
-    def get_latest_bars_datetime(self, symbol, N=1):
-        '''
-        Queries the latest bar for a datetime object representing the "latest market price".
-        :param symbol: takes symbol as string.
-        :return: A Python datetime object for the last bar.
-        '''
-
-        try:
-            bars_list = self.latest_symbol_data[symbol]
-        except KeyError:
-            print('That symbol is not available in the historical data set.')
-            raise
-        else:
-            return bars_list[-N][0]
 
     def get_latest_bar_value(self, symbol, val_type):
         '''
