@@ -2,12 +2,13 @@ import quandl
 import os
 import pandas as pd
 import sys
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #use this line the first time you use quandl. For more info see: https://github.com/quandl/quandl-python
 # quandl.save_key("supersecret")
 
 #this line afterwards
-from googlefinance.get import get_data
 quandl.read_key()
 
 cot_period = 26
@@ -195,16 +196,16 @@ def append_cot_to_market_file():
         merge = merge.reset_index()
 
         # reindex the cot to friday or next day on the index in the next week
-        iter = merge[['Date', 'Commercial Index', 'Commercial Short', 'Commercial Long']].fillna(0)
+        iter = merge[['Date', 'Commercial Index', 'Commercial Short', 'Commercial Long']]#.fillna(0)
         m_df = m_df.reset_index()
 
-        # iterate over files and remove look ahead bias by shifting COT Dates forward
+        # iterate over files and remove look ahead bias by shifting COT Dates forward to friday or further
         for v in iter.itertuples():
-            if 0 not in v:
+            if pd.notnull(v[2]):
                 if v[1].weekday() == 0:
-                    m_df.set_value(v[0]+4,'Commercial Index', v[2])
-                    m_df.set_value(v[0]+4,'Commercial Short', v[3])
-                    m_df.set_value(v[0]+4,'Commercial Long', v[4])
+                    m_df.set_value(v[0] + 4,'Commercial Index', v[2])
+                    m_df.set_value(v[0] + 4,'Commercial Short', v[3])
+                    m_df.set_value(v[0] + 4,'Commercial Long', v[4])
                 if v[1].weekday() == 1:
                     m_df.set_value(v[0] + 3, 'Commercial Index', v[2])
                     m_df.set_value(v[0] + 3, 'Commercial Short', v[3])
@@ -227,8 +228,7 @@ def append_cot_to_market_file():
         m_df.to_csv(m_path)
     print('Done')
 
-
-#todo check when Quandl updates the data, in order to hard code when to update
+# call everything
 if __name__ == "__main__":
     write_into_file()
     append_cot_to_market_file()
