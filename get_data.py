@@ -7,6 +7,7 @@ import sys
 # quandl.save_key("supersecret")
 
 #this line afterwards
+from googlefinance.get import get_data
 quandl.read_key()
 
 cot_period = 26
@@ -170,6 +171,64 @@ def write_into_file():
         print('Done')
     print('Application Finished')
 
-write_into_file()
+
+def append_cot_to_market_file():
+    '''
+    Set all cot dates couple dates into the future since i dont have concrete release dates.
+    Especially is tuesday interesting, cuz since ~1990 CFTC started to implement COT Report on weekly basis
+    Calculation week is Tuesday BUT the Release is on Friday. To avoid look ahead bias, need to shift it up.
+    :return: cleaned and merged symbol.csv file. Essentially overwrites the existing file.
+    '''
+    print('Start cleaning files... ', end=' ')
+    sys.stdout.flush()
+    symbol_dict = {**quandl_cme_futures_map, **quandl_ice_futures_map}
+    for s in symbol_dict.keys():
+        m_path = f'{dir}{s}.csv'
+        cot_path = f'{dir}{s}_cot.csv'
+
+        # Load content into DataFrames
+        m_df = pd.read_csv(m_path, index_col='Date', parse_dates=True)
+        cot_df = pd.read_csv(cot_path, index_col='Date', parse_dates=True)
+
+        # merge them together
+        merge = m_df.join(cot_df)
+        merge = merge.reset_index()
+
+        # reindex the cot to friday or next day on the index in the next week
+        iter = merge[['Date', 'Commercial Index', 'Commercial Short', 'Commercial Long']].fillna(0)
+        m_df = m_df.reset_index()
+
+        # iterate over files and remove look ahead bias by shifting COT Dates forward
+        for v in iter.itertuples():
+            if 0 not in v:
+                if v[1].weekday() == 0:
+                    m_df.set_value(v[0]+4,'Commercial Index', v[2])
+                    m_df.set_value(v[0]+4,'Commercial Short', v[3])
+                    m_df.set_value(v[0]+4,'Commercial Long', v[4])
+                if v[1].weekday() == 1:
+                    m_df.set_value(v[0] + 3, 'Commercial Index', v[2])
+                    m_df.set_value(v[0] + 3, 'Commercial Short', v[3])
+                    m_df.set_value(v[0] + 3, 'Commercial Long', v[4])
+                if v[1].weekday() == 2:
+                    m_df.set_value(v[0] + 2, 'Commercial Index', v[2])
+                    m_df.set_value(v[0] + 2, 'Commercial Short', v[3])
+                    m_df.set_value(v[0] + 2, 'Commercial Long', v[4])
+                if v[1].weekday() == 3:
+                    m_df.set_value(v[0] + 1, 'Commercial Index', v[2])
+                    m_df.set_value(v[0] + 1, 'Commercial Short', v[3])
+                    m_df.set_value(v[0] + 1, 'Commercial Long', v[4])
+                if v[1].weekday() == 4:
+                    m_df.set_value(v[0] + 5, 'Commercial Index', v[2])
+                    m_df.set_value(v[0] + 5, 'Commercial Short', v[3])
+                    m_df.set_value(v[0] + 5, 'Commercial Long', v[4])
+
+        # write to csv
+        m_df = m_df.set_index('Date')
+        m_df.to_csv(m_path)
+    print('Done')
+
 
 #todo check when Quandl updates the data, in order to hard code when to update
+if __name__ == "__main__":
+    write_into_file()
+    append_cot_to_market_file()

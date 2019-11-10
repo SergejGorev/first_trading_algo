@@ -12,7 +12,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis as QDA
 from sklearn.svm import LinearSVC, SVC
 
-dir_path = 'data\\'
+dir_path = 'C:\\Users\\Xetra\\PycharmProjects\\first_trading_algo\\data\\'
 
 def create_lagged_series(symbol, start_date=None, end_date=None, lags=5):
     '''
@@ -33,12 +33,12 @@ def create_lagged_series(symbol, start_date=None, end_date=None, lags=5):
 
     # Create the new lagged DataFrame
     tslag = pd.DataFrame(index=ts.index)
-    tslag['Today'] = ts['Last']
+    tslag['Today'] = ts['Adj Close']
     tslag['Volume'] = ts['Volume']
 
     # Create the shifted lag series of prior period close values
     for i in range(0, lags):
-        tslag[f'Lag{str(i+1)}'] = ts['Last'].shift(i+1)
+        tslag[f'Lag{str(i+1)}'] = ts['Adj Close'].shift(i+1)
 
     # Create the returns DataFrame
     tsret = pd.DataFrame(index=tslag.index)
