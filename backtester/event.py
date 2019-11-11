@@ -28,7 +28,7 @@ class SignalEvent(Event):
     Those are utilized by the Portfolio object as advice for how to trade.
     '''
 
-    def __init__(self, strategy_id, symbol, datetime, signal_type, strength):
+    def __init__(self, strategy_id, symbol, datetime, signal_type, price, strength):
         '''
         Initialises the SignalEvent.
         :param strategy_id: The unique identifier for the strategy that generated the signal.
@@ -44,6 +44,7 @@ class SignalEvent(Event):
         self.datetime = datetime
         self.signal_type = signal_type
         self.strength = strength
+        self.price = price
 
 class OrderEvent(Event):
     '''
@@ -51,7 +52,7 @@ class OrderEvent(Event):
     The order contains a symbol (e.g. GOOG), a type (market of limit), quantity and a direction.
     '''
 
-    def __init__(self, symbol, order_type, quantity, direction):
+    def __init__(self, symbol, order_type, price, quantity, direction):
         '''
         Initiates the order type, setting whether it is a Market order ('MKT') or
         Limit order ('LMT'), has quantity (integral) and its direction ('BUY') or ('SELL').
@@ -64,6 +65,7 @@ class OrderEvent(Event):
         self.type = 'ORDER'
         self.symbol = symbol
         self.order_type = order_type
+        self.price = price
         self.quantity = quantity
         self.direction = direction
 
@@ -71,9 +73,9 @@ class OrderEvent(Event):
         '''
         Outputs the values within the Order.
         '''
-
         print(
-            f'Order: Symbol={self.symbol}, Type={self.order_type}, Quantity={self.quantity}, '
+            f'Order: Symbol={self.symbol}, Type={self.order_type}, Price={self.price}'
+            f'Quantity={self.quantity}, '
             f'Direction={self.direction}'
         )
 
@@ -85,7 +87,7 @@ class FillEvent(Event):
     as well as the transaction costs, such as fees or slippage.
     '''
 
-    def __init__(self, timeindex, symbol, exchange, quantity, direction, fill_cost, commission=None):
+    def __init__(self, timeindex, symbol, exchange, quantity, direction, price, fill_cost, commission=None):
         '''
         Initialises the FillEvent object. Sets the symbol, exchange, quantity, direction,
         fill_cost and an optional commission.
@@ -108,6 +110,7 @@ class FillEvent(Event):
         self.quantity = quantity
         self.direction = direction
         self.fill_cost = fill_cost
+        self.price  = price
         self.commission = commission
 
         # Calculate commission

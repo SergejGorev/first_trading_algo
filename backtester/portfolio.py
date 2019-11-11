@@ -11,6 +11,7 @@ import pandas as pd
 
 from backtester.event import OrderEvent
 from backtester.performance import create_sharpe_ratio, create_drawdowns
+from backtester.TICKER_VALUE import s_tick_amount, s_tick_value
 
 class Portfolio(object):
     '''
@@ -37,6 +38,7 @@ class Portfolio(object):
         self.symbol_dict = self.bars.symbol_dict
         self.start_date = start_date
         self.initial_capital = initial_capital
+        self.slippage = 2
 
         self.all_positions = self.construct_all_positions()
         self.current_positions = dict( (k,v) for k,v in [(s,0) for s in self.symbol_dict.keys()] )
@@ -44,7 +46,6 @@ class Portfolio(object):
         self.all_holdings = self.construct_all_holdings()
         self.current_holdings = self.construct_current_holdings()
 
-    # todo errors may arise because I used dict instead of lists, have to change it probably, will see.
     def construct_all_positions(self):
         '''
         Construct the positions list using the start_date to determine when the time index will begin.
@@ -106,12 +107,19 @@ class Portfolio(object):
         dh['commission'] = self.current_holdings['commission']
         dh['total'] = self.current_holdings['cash']
 
+        self.fill_price = {}
         for s in self.symbol_dict.keys():
-            # Approximation to the real value
-            market_value = self.current_positions[s] * \
-                self.bars.get_latest_bar_value(s, 'Settle')
-            dh[s] = market_value
-            dh['total'] += market_value
+            # Approximation to the real value for each future symbol
+            if event.type == 'FILL':
+                self.fill_price[s] = event.price
+            try:
+                market_value = self.current_positions[s] * \
+                               (self.bars.get_latest_bar_value(s, 'Settle') - self.fill_price[s] ) / \
+                               s_tick_amount[s] * s_tick_value[s]
+                dh[s] = market_value
+                dh['total'] += market_value
+            except:
+                pass
 
         # Append the current holdings
         self.all_holdings.append(dh)
@@ -135,19 +143,22 @@ class Portfolio(object):
     def update_holdings_from_fill(self, fill):
         '''
         This method determines whether a FillEvent is a Buy or Sell and then updates the current_holdings dictionary.
+        Essentially adding up fill cost associated with trading in general. (SLIPPAGE,COMMISSION)
         :param fill: Takes the Fill object and updates the holdings matrix to reflect the holding value.
         '''
 
         # Check whether the fill is a buy or sell
+        # And calculate fill cost with 2 tick slippage
         fill_dir = 0
         if fill.direction == 'BUY':
             fill_dir = 1
         if fill.direction == 'SELL':
             fill_dir = -1
 
+
         # Update holdings list with new quantities
-        fill_cost = self.bars.get_latest_bar_value(fill.symbol, 'Settle')
-        cost = fill_dir * fill_cost * fill.quantity
+        cost = fill_dir * (self.bars.get_latest_bar_value(fill.symbol, 'Settle') - fill.price) / \
+               s_tick_amount[fill.symbol] * self.slippage * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
         self.current_holdings['cash'] -= (cost + fill.commission)
@@ -173,22 +184,29 @@ class Portfolio(object):
         order = None
 
         symbol = signal.symbol
-        direction = signal.signal_type
+        signal_type = signal.signal_type
+        price = signal.price
         strength = signal.strength
 
-        mkt_quantity = 100
+        mkt_quantity = 1
         cur_quantity = self.current_positions[symbol]
         order_type = 'MKT'
 
-        if direction == 'LONG' and cur_quantity == 0:
-            order = OrderEvent(symbol,order_type,mkt_quantity,'BUY')
-        if direction == 'SHORT' and cur_quantity == 0:
-            order = OrderEvent(symbol,order_type,mkt_quantity,'SELL')
+        if signal_type == 'LONG' and cur_quantity == 0:
+            order = OrderEvent(symbol,order_type,price,mkt_quantity,'BUY')
+        if signal_type == 'SHORT' and cur_quantity == 0:
+            order = OrderEvent(symbol,order_type,price,mkt_quantity,'SELL')
 
-        if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol,order_type, abs(cur_quantity), 'SELL')
-        if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol,order_type, abs(cur_quantity), 'BUY')
+        if signal_type == 'LONG STOP EXIT' and cur_quantity > 0:
+            order = OrderEvent(symbol,order_type,price, abs(cur_quantity), 'SELL')
+        if signal_type == 'LONG TAKE PROFIT EXIT' and cur_quantity > 0:
+            order = OrderEvent(symbol,order_type,price, abs(cur_quantity), 'SELL')
+
+        if signal_type == 'SHORT STOP EXIT' and cur_quantity < 0:
+            order = OrderEvent(symbol,order_type,price, abs(cur_quantity), 'BUY')
+        if signal_type == 'SHORT TAKE PROFIT EXIT' and cur_quantity < 0:
+            order = OrderEvent(symbol,order_type,price, abs(cur_quantity), 'BUY')
+
         return order
 
     def update_signal(self, event):
@@ -218,7 +236,7 @@ class Portfolio(object):
         returns = self.equity_curve['returns']
         pnl = self.equity_curve['equity_curve']
 
-        sharpe_ratio = create_sharpe_ratio(returns, periods=252*60*6.5)
+        sharpe_ratio = create_sharpe_ratio(returns, periods=252)
         drawdown, max_dd, dd_duration = create_drawdowns(pnl)
         self.equity_curve['drawdown'] = drawdown
 

@@ -30,7 +30,7 @@ quandl_cot_futures_map = {
     "PA": "075651",
     "PL": "076651",
     "AUP": "191693",
-    "HRC": "192651",
+    # "HRC": "192651", #stahl
     "ZR": "039601",
     "ZO": "004603",
     # "DL": "052641",
@@ -68,7 +68,7 @@ quandl_cme_futures_map = {
     "PA": "PA",
     "PL": "PL",
     "AUP": "ALI",
-    "HRC": "HR",
+    # "HRC": "HR",
     "ZR": "RR",
     "ZO": "O",
     # "DL": "052641", # Milk CME no idea

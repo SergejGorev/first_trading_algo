@@ -10,6 +10,7 @@ except ImportError:
     import queue
 
 from backtester.event import FillEvent
+from backtester.data import HistoricCSVDataHandler
 
 
 class ExecutionHandler(object):
@@ -41,21 +42,37 @@ class SimulatedExecutionHandler(ExecutionHandler):
     sophisticated execution handler.
     '''
 
-    def __init__(self, events):
+    def __init__(self, events, bars):
         '''
         Initialises the handler, setting the event queues up internally.
         :param events: The Queue of Event objects.
         '''
         self.events = events
+        self.bars = bars
 
     def execute_order(self, event):
         '''
-        Simply converts Order objects into Fill objects naively, i.e. without any latency, slippage
+        Simply converts Order objects into Fill objects once the order Price is triggered,
+        i.e. without any latency, slippage
         or fill ratio problems.
         :param event: Contains an Event object with order information.
         '''
         if event.type == 'ORDER':
-            fill_event = FillEvent(
-                datetime.datetime.utcnow(), event.symbol, 'CME', event.quantity, event.direction, None
+            bar_high = self.bars.get_latest_bar_value(
+                event.symbol, 'High'
             )
-            self.events.put(fill_event)
+            bar_low = self.bars.get_latest_bar_value(
+                event.symbol, 'Low'
+            )
+            if event.direction == 'BUY' and bar_high >= event.price:
+                fill_event = FillEvent(
+                    datetime.datetime.utcnow(), event.symbol, 'CME', event.quantity, event.direction,
+                    event.price, None
+                )
+                self.events.put(fill_event)
+            if event.direction == 'SELL' and bar_low <= event.price:
+                fill_event = FillEvent(
+                    datetime.datetime.utcnow(), event.symbol, 'CME', event.quantity, event.direction,
+                    event.price, None
+                )
+                self.events.put(fill_event)

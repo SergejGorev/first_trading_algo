@@ -82,7 +82,7 @@ class MovingAvarageCrossStrategy(Strategy):
 
 if __name__ == "__main__":
     csv_dir = 'data\\'
-    # Import and merge dictionaries from TICKER-SYMBOLS.py
+    # Import and merge dictionaries from TICKER_SYMBOLS.py
     # symbol_dict = {**gd.quandl_cme_futures_map, **gd.quandl_ice_futures_map}
     symbol_dict = {'ES':'ES'}
     initial_capital = 100000.0

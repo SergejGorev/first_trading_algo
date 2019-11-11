@@ -213,7 +213,7 @@ class HistoricCSVDataHandler(DataHandler):
             print('That symbol is not available in the historical data set.')
             raise
         else:
-            return bars_list[-N][0]
+            return bars_list[-N:][0]
 
     def get_latest_bar_value(self, symbol, val_type):
         '''
