@@ -13,14 +13,15 @@ from backtester.backtest import Backtest
 from backtester.data import HistoricCSVDataHandler
 from backtester.execution import SimulatedExecutionHandler
 from backtester.portfolio import Portfolio
+from backtester.TICKER_VALUE import s_tick_amount
 
 class COTAndPriceTriggerSrategy():
     '''
     COT based strategy with a price trigger to enter and exit the market.
     Price trigger generates LONG/EXIT and SHORT/EXIT signals
     '''
-    def __init__(self, bars, events, sma_window=18, cot_ubound=75, cot_lbound=25,
-                 bars_momentum=3, cross_bar=6):
+    def __init__(self, bars, events, sma_window=18, cot_ubound=75.0, cot_lbound=25.0,
+                 bars_momentum=3, cross_bar=5):
         self.bars = bars
         self.symbol_dict = self.bars.symbol_dict
         self.events = events
@@ -174,7 +175,9 @@ class COTAndPriceTriggerSrategy():
                             and self.bought[s] == 'OUT':
                         print(f'{s} LONG: {latest_bar_date} at {max(bars_high[:-1])}')
                         self.stop[s] = self.cross_bar_low[s]
-                        self.take_profit[s] = latest_bar_high + (latest_bar_high - self.stop[s])
+                        self.take_profit[s] = max(bars_high[:-1]) + \
+                                    (max(bars_high[:-1]) / s_tick_amount[s]  - self.stop[s] / s_tick_amount[s]) * \
+                                    s_tick_amount[s]
                         sig_dir = 'LONG'
                         signal = SignalEvent('cot', symbol, dt, sig_dir, max(bars_high[:-1]), 1.0)
                         self.events.put(signal)
@@ -206,7 +209,9 @@ class COTAndPriceTriggerSrategy():
                             and self.bought[s] == 'OUT':
                         print(f'{s} SHORT: {latest_bar_date} at {min(bars_low[:-1])}')
                         self.stop[s] = self.cross_bar_high[s]
-                        self.take_profit[s] = latest_bar_low - (self.stop[s] - latest_bar_low)
+                        self.take_profit[s] = min(bars_low[:-1]) + \
+                                (min(bars_low[:-1]) / s_tick_amount[s]  - self.stop[s] / s_tick_amount[s]) * \
+                                s_tick_amount[s]
                         sig_dir = 'SHORT'
                         signal = SignalEvent('cot', symbol, dt, sig_dir, min(bars_low[:-1]), 1.0)
                         self.events.put(signal)
@@ -234,7 +239,7 @@ if __name__ == "__main__":
     # import and merge dictionaries from TICKER_SYMBOLS.py
     import backtester.TICKER_SYMBOLS as symbols
     symbol_dict = {**symbols.quandl_cme_futures_map, **symbols.quandl_ice_futures_map}
-    # symbol_dict = {'ZS':'ES'}
+    # symbol_dict = {'ES':'ES'}
     initial_capital = 100000.0
     heartbeat = 0.0
     start_date = datetime.datetime(1990,1,1,0,0,0)
