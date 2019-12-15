@@ -1,14 +1,14 @@
 # First Trading Algorithm
-Trading algorithm that automatically looks for signals, generated from COT Reports, Seasonality and Price Action,
+Trading algorithm automatically looks for signals, generated from COT Reports, Seasonality and Price Action,
 and invests in different markets from the well chosen Market-Universe. Secondly, Portfolio Manager takes over the 
 helm and balances Positions and overall Portfolio, based on Correlation Matrix, Margin and opened Positions.
 
 The Idea for that infrastructure I took from a book called "Successful Algorithmic Trading". I going to build on that,
-since it is just amazing and there are any limitations. I can create whatever I want, however I want.
+since it is just amazing and there are any limitations. I can create whatever I want, how I want.
 And even replace or add modules later on.
 
-#What is COT
-COT - Commitment Of Traders Report from the CFTC Commission. It is an american government organisation which
+# What is COT
+Commitment Of Traders(COT) Report from the CFTC Commission. It is an american government organisation which
 provides summarized information about big positions of market participants in futures and options markets on
 a weekly basis. Release date is usually every friday but the reference date is from tuesday to tuesday. I use
 aggregated report for my analysis, which contains the positioning of COMMERCIALS, SPECULATORS and NON REPORTABLE.
@@ -27,8 +27,8 @@ information advantage at least to a curtain degree. Since they buy or sell the c
 about their crop condition. It can give me some information advantage too.
 
 
-#Working Progress
-#####Done 
+# Working Progress
+##### Done 
 COT Index and price momentum trigger. I need to build a workaround for COT data, because CFTC does not 
 publishes release dates of their reports, only a reference date/window (from - to) they calculate the data.
 That creates a look ahead bias for my algo. Most dates are tuesdays, which is a calculation date, BUT the report
@@ -42,7 +42,7 @@ Momentum Price Trigger is just a condition for the algo. Long, if 18D SMA is cro
 prices are above the SMA. For a Short is the other way around. It is quite simple and generates not to much signals.
 
 
-#####In work
+##### In work
 News Sentiment indicator for Twitter, Reddit or Reuters/Bloomberg data with Keras/Tensorflow.
 Still not clear where or how to get historical news data.
 
