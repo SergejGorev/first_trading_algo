@@ -162,7 +162,7 @@ class Portfolio(object):
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
         self.current_holdings['cash'] -= (cost + fill.commission)
-        self.current_holdings['total'] -= (cost + fill.commission)
+        self.current_holdings['total'] += (cost + fill.commission)
 
     def update_fill(self, event):
         '''

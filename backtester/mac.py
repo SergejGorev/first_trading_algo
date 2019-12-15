@@ -70,13 +70,13 @@ class MovingAvarageCrossStrategy(Strategy):
                     if short_sma > long_sma and self.bought[s] == 'OUT':
                         print(f'LONG: {bar_date}')
                         sig_dir = 'LONG'
-                        signal = SignalEvent(1, symbol, dt, sig_dir, 1.0)
+                        signal = SignalEvent(1, symbol, dt, sig_dir, bars[-1], 1.0)
                         self.events.put(signal)
                         self.bought[s] = 'LONG'
                     elif short_sma < long_sma and self.bought[s] == 'LONG':
                         print(f'SHORT: {bar_date}')
                         sig_dir = 'EXIT'
-                        signal = SignalEvent(1, symbol, dt, sig_dir, 1.0)
+                        signal = SignalEvent(1, symbol, dt, sig_dir, bars[-1], 1.0)
                         self.events.put(signal)
                         self.bought[s] = 'OUT'
 

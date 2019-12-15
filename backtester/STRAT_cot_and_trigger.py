@@ -238,8 +238,8 @@ if __name__ == "__main__":
     csv_dir = 'data\\'
     # import and merge dictionaries from TICKER_SYMBOLS.py
     import backtester.TICKER_SYMBOLS as symbols
-    symbol_dict = {**symbols.quandl_cme_futures_map, **symbols.quandl_ice_futures_map}
-    # symbol_dict = {'ES':'ES'}
+    # symbol_dict = {**symbols.quandl_cme_futures_map, **symbols.quandl_ice_futures_map}
+    symbol_dict = {'ES':'ES'}
     initial_capital = 100000.0
     heartbeat = 0.0
     start_date = datetime.datetime(1990,1,1,0,0,0)
