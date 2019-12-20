@@ -5,6 +5,8 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+#In order to have more then 50 request a day, register account in quandl for FREE. You will get Credential Key. Use it.
+# Reqest Limit is going to rise to 500 a day.
 #use this line the first time you use quandl. For more info see: https://github.com/quandl/quandl-python
 # quandl.save_key("supersecret")
 
@@ -104,8 +106,13 @@ quandl_ice_futures_map = {
 
 dict_list = (quandl_cot_futures_map, quandl_cme_futures_map, quandl_ice_futures_map)
 
-#Request COT Data and Market Data for each future and create COT Index
-def get_data(dictionary, weekly=None):
+def get_data(dictionary, weekly=None) -> pd.DataFrame:
+    '''
+    Request COT Data and Market Data for each future and create COT Index
+    :param dictionary: Ticker Names
+    :param weekly: bool to get weekly data
+    :return: DataFrame
+    '''
     if dictionary is quandl_cot_futures_map:
         for future in quandl_name_generator(dictionary):
             data = quandl.get(future)[['Commercial Long', 'Commercial Short']]
@@ -126,7 +133,14 @@ def get_data(dictionary, weekly=None):
             yield data
 
 #Generator for creating ticker names and file names
-def quandl_name_generator(dictionary, file = None, weekly=None):
+def quandl_name_generator(dictionary, file=None, weekly=None) -> str:
+    '''
+    Creates file names as string and ticker code for quandl query as string.
+    :param dictionary: Takes a dictionary with ticker names.
+    :param file: If its True, a file name going to be created. Else quandl ticker name.
+    :param weekly: If weekly is true, file name is going to contain weekly in the suffix.
+    :return: string
+    '''
     if file is True:
         if dictionary is quandl_cot_futures_map:
             for future in dictionary.keys():
@@ -148,8 +162,11 @@ def quandl_name_generator(dictionary, file = None, weekly=None):
             for future in dictionary.values():
                 yield f'CHRIS/ICE_{future}{continue_contract_month_base}'
 
-#Create folder if it doesn't exists and save data into files
+
 def write_into_file():
+    '''
+    Creates folder if it doesn't exists and save data into files
+    '''
     try:
         os.makedirs(dir)
         print('Created Folder')
