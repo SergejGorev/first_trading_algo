@@ -29,7 +29,7 @@ about their crop condition. It can give me some information advantage too.
 
 # Working Progress
 ##### Done 
-COT Index and price momentum trigger. I need to build a workaround for COT data, because CFTC does not 
+COT Index and price momentum trigger. I needed to build a workaround for COT data, because CFTC does not 
 publishes release dates of their reports, only a reference date/window (from - to) they calculate the data.
 That creates a look ahead bias for my algo. Most dates are tuesdays, which is a calculation date, BUT the report
 is published not until friday. And if you iterate over the data, the algo will have data to work with,
